@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id                String           @id @default(auto()) @map("_id") @db.ObjectId
+  username          String           @unique
+  email             String           @unique
+  password          String
+  profilePicture    String?
+  bio               String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  lastLogin         DateTime?
+
+  posts             Post[]
+  comments          Comment[]
+  likes             Like[]
+  friendshipsSent   Friendship[]     @relation("FriendshipsSent")
+  friendshipsReceived Friendship[]   @relation("FriendshipsReceived")
+  messagesSent      Message[]        @relation("MessagesSent")
+  messagesReceived  Message[]        @relation("MessagesReceived")
+  notifications     Notification[]
+  groupMemberships  GroupMembership[]
+  adminGroups       Group[]          @relation("GroupAdmin") // Corrected relation
+}
+
+model Post {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  content    String
+  image      String?
+  author     User         @relation(fields: [authorId], references: [id])
+  authorId   String       @db.ObjectId
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  visibility String       // e.g., "public", "friends", "private"
+
+  comments   Comment[]
+  likes      Like[]
+}
+
+model Comment {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  post       Post         @relation(fields: [postId], references: [id])
+  postId     String       @db.ObjectId
+  author     User         @relation(fields: [authorId], references: [id])
+  authorId   String       @db.ObjectId
+  content    String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Like {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  post       Post         @relation(fields: [postId], references: [id])
+  postId     String       @db.ObjectId
+  user       User         @relation(fields: [userId], references: [id])
+  userId     String       @db.ObjectId
+  createdAt  DateTime     @default(now())
+}
+
+model Friendship {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  requester  User         @relation("FriendshipsSent", fields: [requesterId], references: [id])
+  requesterId String      @db.ObjectId
+  receiver   User         @relation("FriendshipsReceived", fields: [receiverId], references: [id])
+  receiverId String       @db.ObjectId
+  status     String       // e.g., "pending", "accepted", "declined"
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Message {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  sender     User         @relation("MessagesSent", fields: [senderId], references: [id])
+  senderId   String       @db.ObjectId
+  receiver   User         @relation("MessagesReceived", fields: [receiverId], references: [id])
+  receiverId String       @db.ObjectId
+  content    String
+  createdAt  DateTime     @default(now())
+  readAt     DateTime?
+  threadId   String?      // Optional field for message threading
+}
+
+model Notification {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  user       User         @relation(fields: [userId], references: [id])
+  userId     String       @db.ObjectId
+  type       String       // e.g., "like", "comment", "friendRequest"
+  data       Json
+  read       Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  readAt     DateTime?
+}
+
+model Group {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  description String
+  admin      User         @relation("GroupAdmin", fields: [adminId], references: [id])
+  adminId    String       @db.ObjectId
+  createdAt  DateTime     @default(now())
+
+  memberships GroupMembership[]
+}
+
+model GroupMembership {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  group      Group        @relation(fields: [groupId], references: [id])
+  groupId    String       @db.ObjectId
+  user       User         @relation(fields: [userId], references: [id])
+  userId     String       @db.ObjectId
+  role       String       // e.g., "member", "admin"
+  createdAt  DateTime     @default(now())
+}
