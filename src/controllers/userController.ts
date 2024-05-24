@@ -49,8 +49,12 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-
-
+    
+    // Update the lastLogin field
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date().toISOString() },
+    });
 
     const token = generateToken(user.id);
     console.log(user.id, user.email, token)
