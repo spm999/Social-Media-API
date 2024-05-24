@@ -65,32 +65,21 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-// export const getUserProfile = async (req: Request, res: Response) => {
-//   try {
-//     const userId = (req as any).userId;
-//     const user = await prisma.user.findUnique({
-//       where: { id: userId },
-//       include: {
-//         posts: true,
-//         comments: true,
-//         likes: true,
-//         friendshipsSent: true,
-//         friendshipsReceived: true,
-//         messagesSent: true,
-//         messagesReceived: true,
-//         notifications: true,
-//         groupMemberships: true,
-//         adminGroups: true,
-//       },
-//     });
+//add user bio
+export const updateUserBio = async (req: Request, res: Response) => {
+  const userId = (req as any).userId; // Assuming userId is available in request
 
-//     if (!user) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
+  try {
+    const { bio } = req.body;
 
-//     res.status(200).json(user);
-//   } catch (error) {
-//     console.error('Error fetching user profile:', error);
-//     res.status(500).json({ error: 'Failed to fetch user profile' });
-//   }
-// };
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { bio },
+    });
+
+    res.status(200).json({ user: updatedUser, message: 'Bio updated successfully' });
+  } catch (error) {
+    console.error('Error updating user bio:', error);
+    res.status(500).json({ error: 'Failed to update bio' });
+  }
+};
