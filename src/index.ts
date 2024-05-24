@@ -1,6 +1,9 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import prisma from '../prisma/prisma';  // Import the prisma client
+import prisma from './prisma';  // Import the prisma client
+
+import userRoutes from './routes/user';
+
 
 dotenv.config();
 
@@ -16,6 +19,7 @@ prisma.$connect()
   .catch((err) => console.error('MongoDB connection error:', err));
 
 // Routes
+app.use('/api/users', userRoutes);  // Use user routes
 app.get('/', (req, res) => res.send('API Running'));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
