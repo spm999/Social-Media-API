@@ -108,29 +108,46 @@ export const updateUserBio = async (req: Request, res: Response) => {
 //   }
 // };
 
+export const updateProfileImage = async (req: Request, res: Response) => {
+  // Access the file using req.file, not req.image
+  const file = req.file;
 
-export const updateProfileImage = (req: Request, res: Response) => {
-      console.log(req.file); // Access the file using req.file, not req.image
-      try {
-        // Check if file is uploaded
-        if (!req.file) {
+  try {
+      // Check if file is uploaded
+      if (!file) {
           return res.status(400).json({ error: 'No file found' });
-        }
+      }
 
-        // Upload image to Cloudinary
-        cloudinary.uploader.upload_stream(
+      // Upload image to Cloudinary
+      cloudinary.uploader.upload_stream(
           { folder: 'uploads' },
           (error, result) => {
-            if (error || !result) {
-              console.error('Cloudinary upload error:', error);
-              return res.status(500).json({ error: 'Image upload failed' });
-            }
+              if (error || !result) {
+                  console.error('Cloudinary upload error:', error);
+                  return res.status(500).json({ error: 'Image upload failed' });
+              }
 
-            res.status(200).json({ url: result.secure_url });
+              // Assuming userId is available in request
+              const userId = (req as any ).userId;
+              // Update user profile picture in the database
+              prisma.user
+                  .update({
+                      where: { id: userId },
+                      data: {
+                          profilePicture: result.secure_url, // Assuming result contains the secure URL
+                      },
+                  })
+                  .then((updatedUser) => {
+                      res.status(200).json({ user: updatedUser, message: 'Profile image updated successfully' });
+                  })
+                  .catch((error) => {
+                      console.error('Database update error:', error);
+                      res.status(500).json({ error: 'Failed to update profile image in database' });
+                  });
           }
-        ).end(req.file.buffer);
-      } catch (error) {
-        console.error('Internal server error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-      }
-    }
+      ).end(file.buffer);
+  } catch (error) {
+      console.error('Internal server error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+};
