@@ -16,23 +16,17 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  const { userId } = payload;
-
   try {
-    // Find user by userId and email to ensure both match
-    const user = await prisma.user.findFirst({
-      where: {
-        id: userId
-      },
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
     });
 
-    // If no matching user is found, deny access
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized: User not found or has been deleted' });
     }
 
     // Attach userId to the request object for further use in controllers
-    (req as any).userId = userId;
+    (req as any).userId = payload.userId;
     next();
   } catch (error) {
     console.error('Error verifying user:', error);
