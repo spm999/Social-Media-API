@@ -46,7 +46,6 @@ export const createPost = async (req: Request, res: Response) => {
   }
 };
 
-
 // Get all posts
 export const getAllPublicPosts = async (req: Request, res: Response) => {
     try {
@@ -114,15 +113,36 @@ export const getAllPosts = async (req: Request, res: Response) => {
 // Update a post by ID
 export const updatePostById = async (req: Request, res: Response) => {
   const postId = req.params.id;
-  const { content, image, visibility } = req.body;
+  const { content, visibility } = req.body;
+  const image = req.file;
 
+  // console.log(image, content, visibility)
   try {
+    let imageUrl;
+    if (image) {
+      // Upload the new image to Cloudinary
+      const result = await new Promise<any>((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'uploads/post' },
+          (error, result) => {
+            if (error || !result) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        ).end(image.buffer);
+      });
+
+      imageUrl = result.secure_url;
+    }
+
+    // Update post in the database
     const updatedPost = await prisma.post.update({
       where: { id: postId },
       data: {
         content,
-        image,
         visibility,
+        ...(imageUrl && { image: imageUrl }), // Conditionally update the image field only if imageUrl is defined
       },
     });
 
