@@ -12,6 +12,6 @@ router.post('/create-post', upload.single('image'), authMiddleware, createPost);
 router.get('/all-posts', getAllPublicPosts);
 router.get('/auth-all-posts',authMiddleware, getAllPosts);
 router.put('/update-post/:id', upload.single('image'), authMiddleware, updatePostById);
-router.post('/delete-post', authMiddleware, deletePostById)
+router.delete('/delete-post/:id', authMiddleware, deletePostById)
 
 export default router;

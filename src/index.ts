@@ -20,8 +20,6 @@ prisma.$connect()
   .then(() => console.log('Connected to MongoDB via Prisma'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-
-
 // Routes
 app.use('/api/users', userRoutes);  // Use user routes
 app.use('/api/users', postRoutes);  // Use user routes
