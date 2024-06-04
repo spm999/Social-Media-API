@@ -120,7 +120,7 @@ export const updateProfileImage = async (req: Request, res: Response) => {
 
       // Upload image to Cloudinary
       cloudinary.uploader.upload_stream(
-          { folder: 'uploads' },
+          { folder: 'uploads/users' },
           (error, result) => {
               if (error || !result) {
                   console.error('Cloudinary upload error:', error);
