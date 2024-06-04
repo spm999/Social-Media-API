@@ -1,27 +1,51 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma';
+import cloudinary from '../config/cloudinary';
 
 // Create a new post
 export const createPost = async (req: Request, res: Response) => {
-  const { content, image, visibility } = req.body;
+  const image = req.file;
+  const { content, visibility } = req.body;
   const authorId = (req as any).userId; // Assuming userId is attached to the request object
 
-  try {
-    const post = await prisma.post.create({
-      data: {
-        content,
-        image,
-        authorId,
-        visibility,
-      },
-    });
+  if (!image) {
+    return res.status(400).json({ error: 'No file found' });
+  }
 
-    res.status(201).json({ post, message: 'Post created successfully' });
-  } catch (error) {
-    console.error('Error creating post:', error);
-    res.status(500).json({ error: 'Failed to create post' });
+  try {
+    // Upload image to Cloudinary
+    cloudinary.uploader.upload_stream(
+      { folder: 'uploads/post' },
+      async (error, result) => {
+        if (error || !result) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({ error: 'Image upload failed' });
+        }
+
+        try {
+          // Create post in the database
+          const post = await prisma.post.create({
+            data: {
+              content,
+              image: result.secure_url, // Use Cloudinary secure URL
+              authorId,
+              visibility,
+            },
+          });
+
+          res.status(201).json({ post, message: 'Post created successfully' });
+        } catch (dbError) {
+          console.error('Error creating post:', dbError);
+          res.status(500).json({ error: 'Failed to create post' });
+        }
+      }
+    ).end(image.buffer);
+  } catch (uploadError) {
+    console.error('Error uploading image:', uploadError);
+    res.status(500).json({ error: 'Image upload failed' });
   }
 };
+
 
 // Get all posts
 export const getAllPublicPosts = async (req: Request, res: Response) => {
@@ -39,7 +63,7 @@ export const getAllPublicPosts = async (req: Request, res: Response) => {
     }
   };
 
-
+//Get all posts
 export const getAllPosts = async (req: Request, res: Response) => {
     const userId = (req as any).userId; // Assume userId is set by an authentication middleware
   
