@@ -11,6 +11,6 @@ const upload = multer({storage: storage});
 router.post('/register', registerUser);
 router.post('/login',authMiddleware, loginUser);
 router.put('/update-bio',authMiddleware, updateUserBio);
-router.post('/update-pimg', upload.single('image'), authMiddleware, updateProfileImage)
+router.post('/upload-pimg', upload.single('image'), authMiddleware, updateProfileImage)
 
 export default router;
