@@ -59,9 +59,86 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
     }
   };
 
+export const rejectFriendRequest = async (req: Request, res: Response) => {
+    const { requesterId } = req.body;
+    const receiverId = (req as any).userId; // Assume userId is set by an authentication middleware
+  
+    try {
+      const friendship = await prisma.friendship.updateMany({
+        where: {
+          requesterId,
+          receiverId,
+          status: 'pending',
+        },
+        data: {
+          status: 'declined',
+        },
+      });
+  
+      if (friendship.count === 0) {
+        return res.status(404).json({ error: 'Friend request not found' });
+      }
+  
+      res.status(200).json({ message: 'Friend request rejected' });
+    } catch (error) {
+      console.error('Error rejecting friend request:', error);
+      res.status(500).json({ error: 'Failed to reject friend request' });
+    }
+  };
   
 
+//   export const getAllFriends = async (req: Request, res: Response) => {
+//     const userId = (req as any).userId; // Assume userId is set by an authentication middleware
   
+//     try {
+//       const friendships = await prisma.friendship.findMany({
+//         where: {
+//           OR: [
+//             { requesterId: userId, status: 'accepted' },
+//             { receiverId: userId, status: 'accepted' },
+//           ],
+//         },
+//         include: {
+//         //   requester: true,
+//         //   receiver: true,
+//         requester: {
+//             select: {
+//               profilePicture: true,
+//               bio: true
+//             }
+//           },
+//           receiver: {
+//             select: {
+//               profilePicture: true,
+//               bio: true
+//             }
+//           },
+//         },
+//       });
+  
+//       const friends = friendships.map(friendship => 
+//         friendship.requesterId === userId ? friendship.receiver : friendship.requester
+//       );
+  
+//       res.status(200).json(friends);
+//     } catch (error) {
+//       console.error('Error fetching friends:', error);
+//       res.status(500).json({ error: 'Failed to fetch friends' });
+//     }
+//   };
+  
+
+
+
+
+
+
+
+
+
+  
+
+
 
 
 
