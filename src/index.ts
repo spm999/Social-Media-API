@@ -24,9 +24,9 @@ prisma.$connect()
 
 // Routes
 app.use('/api/users', userRoutes);  // Use user routes
-app.use('/api/users', postRoutes);  // Use user routes
-app.use('/api/users', friendshipRoutes);  // Use user routes
-app.use('/api/users', commentRoutes);  // Use user routes
+app.use('/api/users', postRoutes);  // Use post routes
+app.use('/api/users', friendshipRoutes);  // Use friendship routes
+app.use('/api/users', commentRoutes);  // Use comment routes
 
 
 app.get('/', (req, res) => res.send('API Running'));
