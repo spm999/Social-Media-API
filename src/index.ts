@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import userRoutes from './routes/user';
 import postRoutes from './routes/post'
 import friendshipRoutes from './routes/friendship'
+import commentRoutes from './routes/comment'
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ prisma.$connect()
 app.use('/api/users', userRoutes);  // Use user routes
 app.use('/api/users', postRoutes);  // Use user routes
 app.use('/api/users', friendshipRoutes);  // Use user routes
+app.use('/api/users', commentRoutes);  // Use user routes
 
 
 app.get('/', (req, res) => res.send('API Running'));
