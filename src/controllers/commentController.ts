@@ -43,6 +43,27 @@ export const getCommentById = async (req: Request, res: Response) => {
 };
 
 
+export const getCommentsByPostId = async (req: Request, res: Response) => {
+  const postId = req.params.postId;
+  console.log(postId)
+  try {
+    const comments = await prisma.comment.findMany({
+      where: {postId: postId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments for post:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+};
+
+
+
+
+
+
 
 
 
