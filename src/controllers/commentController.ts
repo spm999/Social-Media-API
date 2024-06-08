@@ -68,7 +68,7 @@ export const updateComment = async (req: Request, res: Response) => {
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
     });
-    
+
 
     if (!comment || comment.authorId !== userId) {
       return res.status(404).json({ error: 'Comment not found or not authorized' });
@@ -86,6 +86,29 @@ export const updateComment = async (req: Request, res: Response) => {
   }
 };
 
+export const deleteComment = async (req: Request, res: Response) => {
+  const commentId = req.params.commentId;
+  const userId = (req as any).userId;
+
+  try {
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+
+    if (!comment || comment.authorId !== userId) {
+      return res.status(404).json({ error: 'Comment not found or not authorized' });
+    }
+
+    await prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    res.status(200).json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    res.status(500).json({ error: 'Failed to delete comment' });
+  }
+};
 
 
 
