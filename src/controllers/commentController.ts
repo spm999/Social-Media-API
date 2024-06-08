@@ -45,7 +45,7 @@ export const getCommentById = async (req: Request, res: Response) => {
 
 export const getCommentsByPostId = async (req: Request, res: Response) => {
   const postId = req.params.postId;
-  console.log(postId)
+  // console.log(postId)
   try {
     const comments = await prisma.comment.findMany({
       where: {postId: postId },
@@ -58,6 +58,39 @@ export const getCommentsByPostId = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch comments' });
   }
 };
+
+export const updateComment = async (req: Request, res: Response) => {
+  const commentId = req.params.commentId;
+  const { content } = req.body;
+  const userId = (req as any).userId;
+
+  try {
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+    });
+    
+
+    if (!comment || comment.authorId !== userId) {
+      return res.status(404).json({ error: 'Comment not found or not authorized' });
+    }
+
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: { content },
+    });
+
+    res.status(200).json({ comment: updatedComment, message: 'Comment updated successfully' });
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    res.status(500).json({ error: 'Failed to update comment' });
+  }
+};
+
+
+
+
+
+
 
 
 
