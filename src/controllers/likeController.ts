@@ -81,6 +81,26 @@ export const getLikesByPostId = async (req: Request, res: Response) => {
   };
   
 
+// Get likes by user
+export const getLikesByUserId = async (req: Request, res: Response) => {
+    const userId = (req as any).userId; // Assume userId is set by authentication middleware
+  
+    try {
+      const likes = await prisma.like.findMany({
+        where: { userId },
+        include: {
+          post: true, // Include post data if needed
+        },
+      });
+  
+      res.status(200).json(likes);
+    } catch (error) {
+      console.error('Error fetching likes by user:', error);
+      res.status(500).json({ error: 'Failed to fetch likes' });
+    }
+  };
+
+
 
 
 
