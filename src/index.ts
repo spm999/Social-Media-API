@@ -7,7 +7,7 @@ import postRoutes from './routes/post'
 import friendshipRoutes from './routes/friendship'
 import commentRoutes from './routes/comment'
 import likeRoutes from './routes/like';
-
+import messageRoute from './routes/message'
 
 dotenv.config();
 
@@ -29,7 +29,8 @@ app.use('/api/users', userRoutes);  // Use user routes
 app.use('/api/users', postRoutes);  // Use post routes
 app.use('/api/users', friendshipRoutes);  // Use friendship routes
 app.use('/api/users', commentRoutes);  // Use comment routes
-app.use('/api/users', likeRoutes);
+app.use('/api/users', likeRoutes);     
+app.use('/api/users', messageRoute);     
 
 
 app.get('/', (req, res) => res.send('API Running'));
