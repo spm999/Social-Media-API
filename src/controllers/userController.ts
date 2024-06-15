@@ -39,6 +39,8 @@ export const registerUser = async (req: Request, res: Response) => {
     res.status(400).json({ error: 'User registration failed' });
   }
 };
+
+
 //login
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -66,6 +68,8 @@ export const loginUser = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Login failed' });
   }
 };
+
+
 //add user bio
 export const updateUserBio = async (req: Request, res: Response) => {
   const userId = (req as any).userId; // Assuming userId is available in request
