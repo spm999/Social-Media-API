@@ -24,7 +24,6 @@ export const sendMessage = async (req: Request, res: Response) => {
   }
 };
 
-
 // Get messages between two users
 export const getMessages = async (req: Request, res: Response) => {
   const userId = (req as any).userId; // Assume userId is set by authentication middleware
@@ -45,5 +44,23 @@ export const getMessages = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching messages:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+};
+
+
+// Mark a message as read
+export const markAsRead = async (req: Request, res: Response) => {
+  const { messageId } = req.params;
+
+  try {
+    const message = await prisma.message.update({
+      where: { id: messageId },
+      data: { readAt: new Date() },
+    });
+
+    res.status(200).json({ message: 'Message marked as read' });
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    res.status(500).json({ error: 'Failed to mark message as read' });
   }
 };
