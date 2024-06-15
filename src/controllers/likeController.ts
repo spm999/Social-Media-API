@@ -1,5 +1,3 @@
-// src/controllers/likeController.ts
-
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 
@@ -9,6 +7,16 @@ export const addLike = async (req: Request, res: Response) => {
   const userId = (req as any).userId; // Assume userId is set by authentication middleware
 
   try {
+    // Check if the post exists
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { author: true },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
     // Check if the like already exists
     const existingLike = await prisma.like.findFirst({
       where: { postId, userId },
@@ -26,6 +34,20 @@ export const addLike = async (req: Request, res: Response) => {
       },
     });
 
+    // Create a notification for the post author
+    if (post.authorId !== userId) { // Don't notify if the user is liking their own post
+      await prisma.notification.create({
+        data: {
+          userId: post.authorId, // Notify the post author
+          type: 'like',
+          data: {
+            postId,
+            likerId: userId,
+          },
+        },
+      });
+    }
+
     res.status(201).json({ like, message: 'Post liked successfully' });
   } catch (error) {
     console.error('Error adding like:', error);
@@ -33,75 +55,99 @@ export const addLike = async (req: Request, res: Response) => {
   }
 };
 
+
 // Remove a like from a post
 export const removeLike = async (req: Request, res: Response) => {
-    const { postId } = req.body;
-    const userId = (req as any).userId; // Assume userId is set by authentication middleware
-  
-    try {
-      // Check if the like exists
-      const existingLike = await prisma.like.findFirst({
-        where: { postId, userId },
-      });
-  
-      if (!existingLike) {
-        return res.status(404).json({ error: 'Like not found' });
-      }
-  
-      // Delete the like
-      await prisma.like.delete({
-        where: { id: existingLike.id },
-      });
-  
-      res.status(200).json({ message: 'Like removed successfully' });
-    } catch (error) {
-      console.error('Error removing like:', error);
-      res.status(500).json({ error: 'Failed to remove like' });
+  const { postId } = req.body;
+  const userId = (req as any).userId; // Assume userId is set by authentication middleware
+
+  try {
+    // Check if the like exists
+    const existingLike = await prisma.like.findFirst({
+      where: { postId, userId },
+    });
+
+    if (!existingLike) {
+      return res.status(404).json({ error: 'Like not found' });
     }
-  };
+
+    // Delete the like
+    await prisma.like.delete({
+      where: { id: existingLike.id },
+    });
+
+    // Fetch the post to get author details
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Remove the notification for the post author
+ // Remove the notification for the post author
+ if (post.authorId !== userId) {
+  await prisma.notification.deleteMany({
+    where: {
+      userId: post.authorId,
+      type: 'like',
+      data: {
+        equals: {
+          postId,
+          likerId: userId,
+        },
+      },
+    },
+  });
+}
+
+    res.status(200).json({ message: 'Like removed and notification deleted successfully' });
+  } catch (error) {
+    console.error('Error removing like:', error);
+    res.status(500).json({ error: 'Failed to remove like' });
+  }
+};
 
 
 // Get all likes for a specific post
 export const getLikesByPostId = async (req: Request, res: Response) => {
-    const postId = req.params.postId;
-  
-    try {
-      const likes = await prisma.like.findMany({
-        where: { postId },
-        include: {
-          user: true, // Include user data if needed
-        },
-      });
-  
-      res.status(200).json(likes);
-    } catch (error) {
-      console.error('Error fetching likes:', error);
-      res.status(500).json({ error: 'Failed to fetch likes' });
-    }
-  };
-  
+  const postId = req.params.postId;
+
+  try {
+    const likes = await prisma.like.findMany({
+      where: { postId },
+      include: {
+        user: { select: { id: true, profilePicture: true, username: true } }, // Select only needed user fields
+      },
+    });
+
+    res.status(200).json(likes);
+  } catch (error) {
+    console.error('Error fetching likes:', error);
+    res.status(500).json({ error: 'Failed to fetch likes' });
+  }
+};
+
 
 // Get likes by user
 export const getLikesByUserId = async (req: Request, res: Response) => {
-    const userId = (req as any).userId; // Assume userId is set by authentication middleware
-  
-    try {
-      const likes = await prisma.like.findMany({
-        where: { userId },
-        include: {
-          post: true, // Include post data if needed
-        },
-      });
-  
-      res.status(200).json(likes);
-    } catch (error) {
-      console.error('Error fetching likes by user:', error);
-      res.status(500).json({ error: 'Failed to fetch likes' });
-    }
-  };
+  const userId = (req as any).userId; // Assume userId is set by authentication middleware
 
+  try {
+    const likes = await prisma.like.findMany({
+      where: { userId },
+      include: {
+        post: { select: { id: true, content: true, image: true, createdAt: true } }, // Select only needed post fields
+      },
+    });
 
-
+    res.status(200).json(likes);
+  } catch (error) {
+    console.error('Error fetching likes by user:', error);
+    res.status(500).json({ error: 'Failed to fetch likes' });
+  }
+};
 
 
 
