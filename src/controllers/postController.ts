@@ -110,6 +110,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
     }
   };
 
+
 // Update a post by ID
 export const updatePostById = async (req: Request, res: Response) => {
   const postId = req.params.id;
@@ -152,6 +153,7 @@ export const updatePostById = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update post' });
   }
 };
+
 
 // Delete a post by ID
 export const deletePostById = async (req: Request, res: Response) => {
