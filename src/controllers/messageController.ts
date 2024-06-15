@@ -55,7 +55,7 @@ export const markAsRead = async (req: Request, res: Response) => {
   try {
     const message = await prisma.message.update({
       where: { id: messageId },
-      data: { readAt: new Date() },
+      data: { readAt: new Date().toISOString() },
     });
 
     res.status(200).json({ message: 'Message marked as read' });
