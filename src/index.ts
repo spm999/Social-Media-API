@@ -32,7 +32,8 @@ app.use('/api/users', friendshipRoutes);  // Use friendship routes
 app.use('/api/users', commentRoutes);  // Use comment routes
 app.use('/api/users', likeRoutes);     //use like route
 app.use('/api/users', messageRoute);     //use message route
-app.use('/api/users/', notificationRoute);
+app.use('/api/users/', notificationRoute);   //use notification route
+
 
 
 app.get('/', (req, res) => res.send('API Running'));
