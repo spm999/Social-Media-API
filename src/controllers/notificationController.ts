@@ -23,3 +23,24 @@ export const getUserNotifications = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 };
+
+
+// Mark a notification as read
+export const markNotificationAsRead = async (req: Request, res: Response) => {
+  const notificationId = req.params.notificationId;
+
+  try {
+    const notification = await prisma.notification.update({
+      where: { id: notificationId },
+      data: {
+        read: true,
+        readAt: new Date().toISOString(),
+      },
+    });
+
+    res.status(200).json({ notification, message: 'Notification marked as read' });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+};
