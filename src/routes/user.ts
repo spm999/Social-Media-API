@@ -9,7 +9,7 @@ const storage = multer.memoryStorage();
 const upload = multer({storage: storage});
 
 router.post('/register', registerUser);
-router.post('/login',authMiddleware, loginUser);
+router.post('/login', loginUser);
 router.put('/update-bio',authMiddleware, updateUserBio);
 router.post('/upload-pimg', upload.single('image'), authMiddleware, updateProfileImage)
 
