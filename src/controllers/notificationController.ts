@@ -48,3 +48,26 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to mark notification as read' });
   }
 };
+
+
+// Delete a notification
+export const deleteNotification = async (req: Request, res: Response) => {
+  const notificationId = req.params.notificationId;
+  const userId = (req as any).userId; // Assume userId is set by authentication middleware
+
+
+  try {
+    await prisma.notification.delete({
+      where: { 
+        id: notificationId,
+        userId:userId
+
+       },
+    });
+
+    res.status(204).send(); // No content response for delete
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ error: 'Failed to delete notification' });
+  }
+};
