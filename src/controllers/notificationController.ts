@@ -28,10 +28,14 @@ export const getUserNotifications = async (req: Request, res: Response) => {
 // Mark a notification as read
 export const markNotificationAsRead = async (req: Request, res: Response) => {
   const notificationId = req.params.notificationId;
+  const userId = (req as any).userId; // Assume userId is set by authentication middleware
 
   try {
     const notification = await prisma.notification.update({
-      where: { id: notificationId },
+      where: { 
+        id: notificationId,
+        userId:userId
+       },
       data: {
         read: true,
         readAt: new Date().toISOString(),
