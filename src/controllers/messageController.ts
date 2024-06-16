@@ -8,6 +8,21 @@ export const sendMessage = async (req: Request, res: Response) => {
   const { receiverId, content, threadId } = req.body;
 
   try {
+    // Check if the sender and receiver are friends
+    const areFriends = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { requesterId: senderId, status: 'accepted' },
+          { receiverId: senderId, status: 'accepted' },
+        ],
+      }
+    });
+
+    if (!areFriends) {
+      return res.status(403).json({ error: 'You can only send messages to your friends' });
+    }
+
+
     const message = await prisma.message.create({
       data: {
         senderId,
@@ -46,7 +61,6 @@ export const getMessages = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 };
-
 
 // Mark a message as read
 export const markAsRead = async (req: Request, res: Response) => {
