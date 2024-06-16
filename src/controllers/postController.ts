@@ -62,7 +62,7 @@ export const getAllPublicPosts = async (req: Request, res: Response) => {
     }
   };
 
-//Get all posts
+//Get all posts for authenticated users
 export const getAllPosts = async (req: Request, res: Response) => {
     const userId = (req as any).userId; // Assume userId is set by an authentication middleware
   
