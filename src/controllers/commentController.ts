@@ -1,12 +1,49 @@
+// src/controllers/commentController.ts
 import { Request, Response } from 'express';
 import prisma from '../prisma';
 
+// Create a comment
 export const createComment = async (req: Request, res: Response) => {
-  const userId = (req as any).userId;
-  const postId=req.params.postId // Assuming userId is set by an authentication middleware
-  const {content } = req.body;
+  const userId = (req as any).userId; // Assume userId is set by authentication middleware
+  const postId = req.params.postId;
+  const { content } = req.body;
 
   try {
+    // Fetch the post to check its visibility and author
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: {
+        visibility: true,
+        authorId: true,
+      }
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Check if the post is private
+    if (post.visibility === 'private') {
+      return res.status(403).json({ error: 'You cannot comment on private posts' });
+    }
+    
+    // Check if the post is friends-only and if the commenter is a friend of the post author
+    if (post.visibility === 'friends') {
+      const isFriend = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { requesterId: userId, receiverId: post.authorId, status:'accepted' },
+            { receiverId: userId, requesterId: post.authorId,status:'accepted' }
+          ]
+        }
+      });
+      // If not friends, return an error
+      if (!isFriend) {
+        return res.status(403).json({ error: 'You can only comment on friends-only posts if you are friends with the author' });
+      }
+    }
+
+    // Create the comment
     const newComment = await prisma.comment.create({
       data: {
         content,
