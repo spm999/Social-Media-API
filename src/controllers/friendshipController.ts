@@ -25,6 +25,18 @@ export const sendFriendRequest = async (req: Request, res: Response) => {
       },
     });
 
+
+     // Create a notification for the receiver
+     await prisma.notification.create({
+      data: {
+        userId: receiverId, // Notify the receiver of the friend request
+        type: 'friendRequest',
+        data: {
+          requesterId, // Include requester ID in the notification data
+        },
+      },
+    });
+
     res.status(201).json({ friendship, message: 'Friend request sent' });
   } catch (error) {
     console.error('Error sending friend request:', error);
