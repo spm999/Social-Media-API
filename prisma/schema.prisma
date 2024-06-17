@@ -27,7 +27,7 @@ model User {
   messagesReceived  Message[]        @relation("MessagesReceived")
   notifications     Notification[]
   groupMemberships  GroupMembership[]
-  adminGroups       Group[]          @relation("GroupAdmin") // Corrected relation
+  adminGroups       Group[]          @relation("GroupAdmin")
 }
 
 model Post {
@@ -107,6 +107,7 @@ model Group {
   createdAt  DateTime     @default(now())
 
   memberships GroupMembership[]
+  posts       GroupPost[]
 }
 
 model GroupMembership {
@@ -117,4 +118,15 @@ model GroupMembership {
   userId     String       @db.ObjectId
   role       String       // e.g., "member", "admin"
   createdAt  DateTime     @default(now())
+}
+
+model GroupPost {
+  id         String       @id @default(auto()) @map("_id") @db.ObjectId
+  content    String
+  authorId   String       @db.ObjectId
+  createdAt  DateTime     @default(now())
+
+    // Add the group relation
+  group      Group        @relation(fields: [groupId], references: [id])
+  groupId    String       @db.ObjectId
 }
