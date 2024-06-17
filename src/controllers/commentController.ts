@@ -32,11 +32,12 @@ export const createComment = async (req: Request, res: Response) => {
       const isFriend = await prisma.friendship.findFirst({
         where: {
           OR: [
-            { requesterId: userId, receiverId: post.authorId, status:'accepted' },
-            { receiverId: userId, requesterId: post.authorId,status:'accepted' }
+            { requesterId: userId, receiverId: post.authorId, status: 'accepted' },
+            { receiverId: userId, requesterId: post.authorId, status: 'accepted' }
           ]
         }
       });
+
       // If not friends, return an error
       if (!isFriend) {
         return res.status(403).json({ error: 'You can only comment on friends-only posts if you are friends with the author' });
@@ -51,6 +52,21 @@ export const createComment = async (req: Request, res: Response) => {
         authorId: userId,
       },
     });
+
+    // Create a notification for the post author
+    if (post.authorId !== userId) { // Don't notify if the user is commenting on their own post
+      await prisma.notification.create({
+        data: {
+          userId: post.authorId, // Notify the post author
+          type: 'comment',
+          data: {
+            postId,
+            commenterId: userId,
+            commentId: newComment.id
+          },
+        },
+      });
+    }
 
     res.status(201).json({ comment: newComment, message: 'Comment created successfully' });
   } catch (error) {
