@@ -7,15 +7,45 @@ export const addLike = async (req: Request, res: Response) => {
   const userId = (req as any).userId; // Assume userId is set by authentication middleware
 
   try {
-    // Check if the post exists
+
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      include: { author: true },
+      select: {
+        id: true,
+        visibility: true,
+        authorId: true,
+      },
     });
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
+
+
+
+     // Check the post visibility
+     if (post.visibility === 'private') {
+      return res.status(403).json({ error: 'You cannot like a private post' });
+    }
+
+    if (post.visibility === 'friends') {
+      // Check if the liker is a friend of the post author
+      const isFriend = await prisma.friendship.findFirst({
+        where: {
+          status: 'accepted',
+          OR: [
+            { requesterId: userId, receiverId: post.authorId, status:'accepted' },
+            { receiverId: userId, requesterId: post.authorId, status:'accepted'}
+          ],
+        },
+      });
+
+      if (!isFriend) {
+        return res.status(403).json({ error: 'You can only like posts made by friends' });
+      }
+    }
+
+
 
     // Check if the like already exists
     const existingLike = await prisma.like.findFirst({
