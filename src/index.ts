@@ -9,6 +9,7 @@ import commentRoutes from './routes/comment'
 import likeRoutes from './routes/like';
 import messageRoute from './routes/message'
 import notificationRoute from './routes/notification'
+import groupRoutes from './routes/group'; // Adjust the path according to your project structure
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/users', commentRoutes);  // Use comment routes
 app.use('/api/users', likeRoutes);     //use like route
 app.use('/api/users', messageRoute);     //use message route
 app.use('/api/users/', notificationRoute);   //use notification route
+app.use('/api/users/', groupRoutes);   //use group route
 
 
 
