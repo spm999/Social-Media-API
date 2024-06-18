@@ -31,3 +31,28 @@ export const createGroup = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create group' });
   }
 };
+
+
+export const getGroupById = async (req: Request, res: Response) => {
+    const groupId = req.params.groupId;
+  
+    try {
+      const group = await prisma.group.findUnique({
+        where: { id: groupId },
+        include: { memberships: true, posts: true },
+      });
+  
+      if (!group) {
+        return res.status(404).json({ error: 'Group not found' });
+      }
+  
+      res.status(200).json(group);
+    } catch (error) {
+      console.error('Error fetching group by ID:', error);
+      res.status(500).json({ error: 'Failed to fetch group' });
+    }
+  };
+
+  
+
+  
