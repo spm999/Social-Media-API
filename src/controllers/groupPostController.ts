@@ -23,3 +23,21 @@ export const createGroupPost = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to create group post' });
   }
 };
+
+
+export const getGroupPosts = async (req: Request, res: Response) => {
+    const groupId = req.params.groupId;
+  
+    try {
+      const posts = await prisma.groupPost.findMany({
+        where: { groupId },
+        orderBy: { createdAt: 'desc' },
+      });
+  
+      res.status(200).json(posts);
+    } catch (error) {
+      console.error('Error fetching group posts:', error);
+      res.status(500).json({ error: 'Failed to fetch group posts' });
+    }
+  };
+  
