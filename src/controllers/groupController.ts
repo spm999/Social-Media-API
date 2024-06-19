@@ -54,5 +54,21 @@ export const getGroupById = async (req: Request, res: Response) => {
   };
 
   
-
+  export const updateGroup = async (req: Request, res: Response) => {
+    const groupId = req.params.groupId;
+    const { name, description } = req.body;
+  
+    try {
+      const updatedGroup = await prisma.group.update({
+        where: { id: groupId },
+        data: { name, description },
+      });
+  
+      res.status(200).json({ group: updatedGroup, message: 'Group updated successfully' });
+    } catch (error) {
+      console.error('Error updating group:', error);
+      res.status(500).json({ error: 'Failed to update group' });
+    }
+  };
+  
   
