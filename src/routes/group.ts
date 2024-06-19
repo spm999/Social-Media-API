@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createGroup, getGroupById, updateGroup,deleteGroup} from '../controllers/groupController';
 import { authMiddleware } from '../middleware/auth';
-import { createGroupPost } from '../controllers/groupPostController';
+import { createGroupPost, getGroupPosts } from '../controllers/groupPostController';
 
 const router = Router();
 
@@ -14,6 +14,7 @@ router.delete('/groups/:groupId', authMiddleware, deleteGroup); // Delete a grou
 
 // Group post routes
 router.post('/groups/:groupId/posts', authMiddleware, createGroupPost); // Create a post in a group
+router.get('/groups/:groupId/posts', authMiddleware, getGroupPosts); // Get all posts in a group
 
 
 export default router;
